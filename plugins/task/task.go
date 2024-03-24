@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/FloatTech/zbputils/control"
-	"github.com/wdvxdr1123/ZeroBot"
+	ctrl "github.com/FloatTech/zbputils/control"
+	zero "github.com/wdvxdr1123/ZeroBot"
 	"github.com/wdvxdr1123/ZeroBot/message"
 )
 
