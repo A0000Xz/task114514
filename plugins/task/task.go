@@ -5,17 +5,16 @@ import (
 	"io/ioutil"
 	"strings"
 
-	ctrl "github.com/FloatTech/zbpctrl"
-	zero "github.com/wdvxdr1123/ZeroBot"
+	"github.com/FloatTech/zbpctrl"
+	"github.com/wdvxdr1123/ZeroBot"
 	"github.com/wdvxdr1123/ZeroBot/message"
 )
 
 var tasks []string
-
 var tasksFile = "tasks.txt"
 
 func init() {
-	engine := ctrl.Register("task_plugin", &ctrl.Options{
+	engine := zbpctrl.Register("task_plugin", &zbpctrl.Options{
 		Brief: "任务管理插件",
 		Help:  "用法：添加任务[任务名称]、移除任务[任务名称]、展示任务",
 	})
@@ -28,7 +27,7 @@ func init() {
 	loadTasks()
 }
 
-func addTask(ctx *zero.Ctx) {
+func addTask(ctx *ZeroBot.Ctx) {
 	taskName := extractTaskName(ctx.RawMessage)
 	if taskName == "" {
 		ctx.Send("任务名称不能为空！")
@@ -40,7 +39,7 @@ func addTask(ctx *zero.Ctx) {
 	ctx.Send(fmt.Sprintf("任务'%s'添加成功！", taskName))
 }
 
-func removeTask(ctx *zero.Ctx) {
+func removeTask(ctx *ZeroBot.Ctx) {
 	taskName := extractTaskName(ctx.RawMessage)
 	if taskName == "" {
 		ctx.Send("任务名称不能为空！")
@@ -58,7 +57,7 @@ func removeTask(ctx *zero.Ctx) {
 	ctx.Send(fmt.Sprintf("未找到名称为'%s'的任务！", taskName))
 }
 
-func showTasks(ctx *zero.Ctx) {
+func showTasks(ctx *ZeroBot.Ctx) {
 	if len(tasks) > 0 {
 		taskList := strings.Join(tasks, "\n")
 		ctx.Send("当前任务列表：\n" + taskList)
