@@ -10,6 +10,8 @@ import (
 	"github.com/wdvxdr1123/ZeroBot/message"
 )
 
+var tasks []string
+
 var tasksFile = "tasks.txt"
 
 func init() {
