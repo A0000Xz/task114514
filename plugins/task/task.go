@@ -15,7 +15,7 @@ var tasks []string
 var tasksFile = "tasks.txt"
 
 func init() {
-	engine := control.Register("task_plugin", &control.Options{
+	engine := ctrl.Register("task_plugin", &ctrl.Options{
 		Brief: "任务管理插件",
 		Help:  "用法：添加任务[任务名称]、移除任务[任务名称]、展示任务",
 	})
@@ -28,35 +28,37 @@ func init() {
 	loadTasks()
 }
 
-func addTask(ctx *ZeroBot.Ctx) {
+func addTask(ctx *zero.Ctx) {
 	taskName := extractTaskName(ctx.RawMessage)
-	if taskName != "" {
-		tasks = append(tasks, taskName)
-		saveTasks() // 添加任务后保存到文件
-		ctx.Send(fmt.Sprintf("任务'%s'添加成功！", taskName))
-	} else {
+	if taskName == "" {
 		ctx.Send("任务名称不能为空！")
+		return
 	}
+
+	tasks = append(tasks, taskName)
+	saveTasks() // 添加任务后保存到文件
+	ctx.Send(fmt.Sprintf("任务'%s'添加成功！", taskName))
 }
 
-func removeTask(ctx *ZeroBot.Ctx) {
+func removeTask(ctx *zero.Ctx) {
 	taskName := extractTaskName(ctx.RawMessage)
-	if taskName != "" {
-		for i, task := range tasks {
-			if task == taskName {
-				tasks = append(tasks[:i], tasks[i+1:]...)
-				saveTasks() // 移除任务后保存到文件
-				ctx.Send(fmt.Sprintf("任务'%s'移除成功！", taskName))
-				return
-			}
+	if taskName == "" {
+		ctx.Send("任务名称不能为空！")
+		return
+	}
+
+	for i, task := range tasks {
+		if task == taskName {
+			tasks = append(tasks[:i], tasks[i+1:]...)
+			saveTasks() // 移除任务后保存到文件
+			ctx.Send(fmt.Sprintf("任务'%s'移除成功！", taskName))
+			return
 		}
-		ctx.Send(fmt.Sprintf("未找到名称为'%s'的任务！", taskName))
-	} else {
-		ctx.Send("任务名称不能为空！")
 	}
+	ctx.Send(fmt.Sprintf("未找到名称为'%s'的任务！", taskName))
 }
 
-func showTasks(ctx *ZeroBot.Ctx) {
+func showTasks(ctx *zero.Ctx) {
 	if len(tasks) > 0 {
 		taskList := strings.Join(tasks, "\n")
 		ctx.Send("当前任务列表：\n" + taskList)
