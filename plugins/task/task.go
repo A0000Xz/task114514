@@ -1,23 +1,47 @@
-package example
+ackage task
 
 import (
 	"fmt"
-	"io/ioutil"
+	"ioutil"
 	"strings"
+	"time"
 
 	ctrl "github.com/FloatTech/zbpctrl"
 	"github.com/FloatTech/zbputils/control"
-	"github.com/wdvxdr1123/ZeroBot"
+	"github.com/FloatTech/zbputils/ctxext"
+	zero "github.com/wdvxdr1123/ZeroBot"
 	"github.com/wdvxdr1123/ZeroBot/message"
 )
 
 var tasks []string
 var tasksFile = "tasks.txt"
 
+// 自定义限制函数, 括号内填入(时间,触发次数)
+var examplelimit = ctxext.NewLimiterManager(time.Second*5, 1)
+
+// 这里就是插件主体了
 func init() {
-	engine := control.Register("task_plugin", &control.Options{
+	// 既然是zbp, 那就从接入control开始, 在这里注册你的插件以及设置是否默认开启和填写帮助和数据存放路径
+	engine := control.Register("task", &ctrl.Options[*zero.Ctx]{
+		// 控制插件是否默认启用 true为默认不启用 false反之
+		DisableOnDefault: true,
+		// 插件的简介
 		Brief: "任务管理插件",
+		// 插件的帮助 管理员发送 /用法 example 可见
 		Help:  "用法：添加任务[任务名称]、移除任务[任务名称]、展示任务",
+		// 插件的背景图, 支持http和本地路径
+		// Banner: "",
+		// 插件的数据存放路径, 分为公共和私有, 都会在/data下创建目录, 公有需要首字母大写, 私有需要首字母小写
+		PublicDataFolder: "task",
+		// PrivateDataFolder: "example",		// 避免问题所以注释了
+		// 自定义插件开启时的回复
+		OnEnable: func(ctx *zero.Ctx) {
+			ctx.Send("任务系统已启用")
+		},
+		// 自定义插件关闭时的回复
+		OnDisable: func(ctx *zero.Ctx) {
+			ctx.Send("任务系统已禁用")
+		},
 	})
 
 	engine.OnCommand("添加任务").Handle(addTask)
@@ -25,24 +49,23 @@ func init() {
 	engine.OnCommand("展示任务").Handle(showTasks)
 
 	loadTasks()
-}
 
-func addTask(ctx *ZeroBot.Ctx) {
+func addTask(ctx *zero.Ctx) {
 	taskName := extractTaskName(ctx.RawMessage)
 	if taskName == "" {
-		ctx.Send("任务名称不能为空！")
+		ctx.SendChain(message.Text("任务名称不能为空！"))
 		return
 	}
 
 	tasks = append(tasks, taskName)
 	saveTasks()
-	ctx.Send(fmt.Sprintf("任务'%s'添加成功！", taskName))
+	ctx.SendChain(message.Text("任务'%s'添加成功！", taskName))
 }
 
-func removeTask(ctx *ZeroBot.Ctx) {
+func removeTask(ctx *zero.Ctx) {
 	taskName := extractTaskName(ctx.RawMessage)
 	if taskName == "" {
-		ctx.Send("任务名称不能为空！")
+		ctx.SendChain(message.Text("任务名称不能为空！"))
 		return
 	}
 
@@ -50,19 +73,19 @@ func removeTask(ctx *ZeroBot.Ctx) {
 		if task == taskName {
 			tasks = append(tasks[:i], tasks[i+1:]...)
 			saveTasks()
-			ctx.Send(fmt.Sprintf("任务'%s'移除成功！", taskName))
+			ctx.SendChain(message.Text("任务'%s'移除成功！", taskName))
 			return
 		}
 	}
-	ctx.Send(fmt.Sprintf("未找到名称为'%s'的任务！", taskName))
+	ctx.SendChain(message.Text("未找到名称为'%s'的任务！", taskName))
 }
 
-func showTasks(ctx *ZeroBot.Ctx) {
+func showTasks(ctx *zero.Ctx) {
 	if len(tasks) > 0 {
 		taskList := strings.Join(tasks, "\n")
-		ctx.Send("当前任务列表：\n" + taskList)
+		ctx.SendChain(message.Text("当前任务列表：\n" + taskList))
 	} else {
-		ctx.Send("当前无任务！")
+		ctx.SendChain(message.Text("当前无任务！"))
 	}
 }
 
@@ -96,4 +119,5 @@ func loadTasks() {
 	} else {
 		ctx.Send(fmt.Sprintf("无法加载任务列表：%v", err))
 	}
+}
 }
